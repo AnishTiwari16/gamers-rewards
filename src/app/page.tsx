@@ -23,6 +23,7 @@ import RewardBalance from '@/components/RewardBalance';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
 import { FloatingNav } from '@/components/ui/floating-navbar';
+import { REWARD_MANAGER } from '@/constant/addresses';
 const getButtonCta = ({
   reward,
   isLoading,
@@ -63,10 +64,9 @@ const getButtonCta = ({
 };
 
 const Homepage = () => {
-  const { isConnected, chain } = useAccount();
+  const { isConnected, chain, address } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { switchChain } = useSwitchChain();
-
   const [selectedChain, setSelectedChain] = useState<{
     id: number;
     name: string;
@@ -218,7 +218,7 @@ const Homepage = () => {
                       {selectedChain.id === bscTestnet.id &&
                         <div className='flex items-center pt-4  justify-center'>
                           <ArrowLink
-                            href="https://ccip.chain.link/msg/0x0f88c417c71cb7f19d2bfee769eb392846d45f73eca1a6d1a208ea62a17323aa"
+                            href={`https://testnet.bscscan.com/token/0xcae3696c061551529a771fed4448d461ea8778ce?a=${address}`}
                             className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                           >
                             Transaction on {selectedChain.name}
@@ -228,7 +228,7 @@ const Homepage = () => {
                       {selectedChain.id === baseSepolia.id &&
                         <div className='flex items-center pt-4 justify-between'>
                           <ArrowLink
-                            href="https://ccip.chain.link/msg/0x0f88c417c71cb7f19d2bfee769eb392846d45f73eca1a6d1a208ea62a17323aa"
+                            href={`https://ccip.chain.link/address/${REWARD_MANAGER}`}
                             className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                           >
                             Transaction on Chainlink
