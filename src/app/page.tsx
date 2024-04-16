@@ -15,13 +15,13 @@ import useGetRewardDetails from '@/hooks/useGetRewardDetails';
 import useIsUserWhiteListed from '@/hooks/useIsUserWhitelisted';
 import { cn } from '@/lib/utils';
 
-import { CardBody, CardContainer, CardItem } from '@/components/AnimatedCard';
 import { Tab, Tabs } from '@/components/AnimatedTabs';
 import ChainSelector from '@/components/chain/ChainSelector';
 import ClaimButton from '@/components/ClaimButton';
 import ArrowLink from '@/components/links/ArrowLink';
 import RewardBalance from '@/components/RewardBalance';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Input } from '@/components/ui/input';
 const getButtonCta = ({
   reward,
   isLoading,
@@ -140,8 +140,8 @@ const Homepage = () => {
           }}
           className='w-full relative overflow-hidden '
         >
-          <CardContainer className='h-full '>
-            <CardBody className='max-w-[500px] z-20 h-full relative mt-5 mx-auto w-full'>
+          <div className='h-full '>
+            <div className='max-w-[500px] z-20 h-full relative mt-5 mx-auto w-full'>
               <div className='rounded-xl border bg-card text-card-foreground h-full pb-2 px-2 shadow-sm'>
                 <div className='flex flex-col p-6 space-y-1'>
                   <h3 className='font-semibold tracking-tight text-center text-2xl'>
@@ -158,7 +158,7 @@ const Homepage = () => {
                   setSelectedChain={setSelectedChain}
                 />
                 <RewardBalance reward={reward} />
-                <CardItem className='w-full'>
+                <div className='w-full'>
                   <ClaimButton
                     disabled={
                       isConnected && !!chain
@@ -195,7 +195,7 @@ const Homepage = () => {
                       isConnected: isConnected,
                     })}
                   </ClaimButton>
-                </CardItem>
+                </div>
                 {claimedReward &&
                   claimedReward &&
                   (reward === '0' || reward === '') &&
@@ -208,15 +208,14 @@ const Homepage = () => {
                       >
                         You have claimed on <strong>{selectedChain.name}</strong>
                       </label>
-                      <input
-                        className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
-                        placeholder='-'
+                  
+                        <Input placeholder='-'
                         value={
                           formatUnits(BigInt(claimedReward), 18).toString() +
                           ' USDC'
                         }
-                        disabled
-                      />
+                        disabled />
+         
                       {selectedChain.id === bscTestnet.id &&
                         <div className='flex items-center pt-4  justify-center'>
                           <ArrowLink
@@ -247,8 +246,8 @@ const Homepage = () => {
                   </div>
                 ) : null}
               </div>
-            </CardBody>
-          </CardContainer>
+            </div>
+          </div>
         </motion.div>}
       </AnimatePresence>
       <AnimatePresence initial={false} mode='popLayout'>
@@ -267,8 +266,8 @@ const Homepage = () => {
           }}
           className='w-full'
         >
-          <CardContainer className='h-full'>
-            <CardBody className='max-w-[800px] z-20 h-full relative mt-5 mx-auto w-full'>
+          <div className='h-full'>
+            <div className='max-w-[800px] z-20 h-full relative mt-5 mx-auto w-full'>
               <div className='rounded-xl border bg-card text-card-foreground h-full pb-2 px-2 shadow-sm'>
                 <div className='flex flex-col p-6 space-y-1'>
                   <h3 className='font-semibold tracking-tight text-2xl'>
@@ -298,8 +297,8 @@ const Homepage = () => {
                   </p>
                 </div>
               </div>
-            </CardBody>
-          </CardContainer>
+            </div>
+          </div>
         </motion.div>}
       </AnimatePresence>
       <AnimatePresence initial={false} mode='popLayout'>
@@ -317,8 +316,8 @@ const Homepage = () => {
           }}
           className='w-full'
         >
-          <CardContainer className='h-full'>
-            <CardBody className='max-w-[500px] z-20 h-full relative mt-5 mx-auto w-full'>
+          <div className='h-full'>
+            <div className='max-w-[500px] z-20 h-full relative mt-5 mx-auto w-full'>
               <div className='rounded-xl border bg-card text-card-foreground h-full pb-2 px-2 shadow-sm'>
                 <div className='flex flex-col p-6 space-y-1'>
                   <h3 className='font-semibold tracking-tight text-center text-2xl'>
@@ -381,8 +380,8 @@ const Homepage = () => {
                   </Accordion>
                 </div>
               </div>
-            </CardBody>
-          </CardContainer>
+            </div>
+          </div>
         </motion.div>}
       </AnimatePresence>
     </div>

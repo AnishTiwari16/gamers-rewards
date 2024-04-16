@@ -60,23 +60,23 @@ const useClaimMutation = () => {
             txParams.data = data;
           }
           await provider.send('eth_sendTransaction', [txParams]);
-          // biconomy.on('txHashGenerated', (data) => {
-          //   console.log('txHashGenerated', data);
-          // });
-          // biconomy.on('txMined', (data) => {
-          //   console.log('txMined', data);
-          // });
+          biconomy.on('txHashGenerated', (data) => {
+            console.log('txHashGenerated', data);
+          });
+          biconomy.on('txMined', (data) => {
+            console.log('txMined', data);
+          });
 
-          // biconomy.on('onError', (err) => {
-          //   console.error('onError', err);
-          // });
+          biconomy.on('onError', (err) => {
+            console.error('onError', err);
+          });
 
-          // biconomy.on('txHashChanged', (data) => {
-          //   console.log('txHashChanged', data);
-          // });
+          biconomy.on('txHashChanged', (data) => {
+            console.log('txHashChanged', data);
+          });
         }
       } catch (error) {
-        // console.log(error);
+        console.log(error);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
