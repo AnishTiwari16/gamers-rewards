@@ -1,0 +1,40 @@
+import { createSmartAccountClient } from '@biconomy/account';
+import { useQuery } from '@tanstack/react-query';
+import { bscTestnet } from 'viem/chains';
+import { useAccount, useWalletClient } from 'wagmi';
+
+import { useToast } from '@/components/ui/use-toast';
+
+const BICONOMY_API_KEY = 'JQpVD1_Ov.d6fad103-3732-44cc-a2f1-e3a0b40995fe';
+
+const useBiconomy = () => {
+  const { toast } = useToast();
+  const { address } = useAccount();
+  const { data: walletClient } = useWalletClient();
+  // const url = `https://bundler.biconomy.io/api/v2/${bscTestnet.id}/${BICONOMY_API_KEY}`
+  const url = `https://bundler.biconomy.io/api/v2/${bscTestnet.id}/${BICONOMY_API_KEY}`;
+
+  const createSmartAccount = async () => {
+    if (!walletClient) return;
+    try {
+      const biconomySmartAccount = await createSmartAccountClient({
+        signer: walletClient,
+        bundlerUrl: url, // <-- Read about this at https://docs.biconomy.io/dashboard#bundler-url
+        biconomyPaymasterApiKey: BICONOMY_API_KEY, // <-- Read about at https://docs.biconomy.io/dashboard/paymaster
+      });
+      return biconomySmartAccount;
+    } catch (error) {
+      toast({
+        title: 'Biconomy instantiation failed',
+      });
+      return null;
+    }
+  };
+
+  return useQuery({
+    queryKey: ['biconomy-instance', address, walletClient?.account],
+    queryFn: () => createSmartAccount(),
+  });
+};
+
+export default useBiconomy;
