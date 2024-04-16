@@ -22,6 +22,7 @@ import ArrowLink from '@/components/links/ArrowLink';
 import RewardBalance from '@/components/RewardBalance';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
+import { FloatingNav } from '@/components/ui/floating-navbar';
 const getButtonCta = ({
   reward,
   isLoading,
@@ -78,22 +79,8 @@ const Homepage = () => {
     chainId: selectedChain.id,
   });
 
-  const tabs = [
-    {
-      title: 'Home',
-      value: 'home',
-    },
-    {
-      title: 'About',
-      value: 'about',
-    },
-    {
-      title: 'FAQ',
-      value: 'faq',
-    },
-  ];
 
-  const [active, setActive] = useState<Tab>(tabs[0]);
+  const [active, setActive] = useState<string>('Home');
 
   const { data: rewardDetails, isLoading, refetch } = useGetRewardDetails();
 
@@ -104,7 +91,17 @@ const Homepage = () => {
 
   const { data: isUserWhitelisted, isLoading: isUserWhitelistedLoading } =
     useIsUserWhiteListed();
-
+ const navItems = [
+    {
+      name: "Home",
+    },
+    {
+      name: "About",
+    },
+    {
+      name: "FAQ",
+    },
+  ];
   return (
     <div className='w-full min-h-screen h-full bg-cover_bg bg-cover relative'>
       <Image
@@ -114,19 +111,21 @@ const Homepage = () => {
         alt=''
       />
       <div className='flex items-center justify-end h-[100px] px-4'>
-        <div className='flex absolute -translate-x-1/2 left-1/2   z-30 items-center justify-center w-fit'>
+        {/* <div className='flex absolute -translate-x-1/2 left-1/2   z-30 items-center justify-center w-fit'>
           <Tabs
             tabs={tabs}
             getSelectedTab={(act) => {
               setActive(act);
             }}
           />
-        </div>
+        </div> */}
+        <FloatingNav navItems={navItems} active = {active} setActive = {setActive}/>
         <ConnectButton />
+      
       </div>
       <AnimatePresence initial={false} mode='popLayout'>
-        {active.value === "home" && <motion.div
-          key={active.title}
+        {active === "Home" && <motion.div
+       
           initial={{
             opacity: 0
           }}
@@ -251,8 +250,8 @@ const Homepage = () => {
         </motion.div>}
       </AnimatePresence>
       <AnimatePresence initial={false} mode='popLayout'>
-        {active.value === "about" && <motion.div
-          key={active.title}
+        {active === "About" && <motion.div
+      
           initial={{
             opacity: 0
           }}
@@ -302,8 +301,8 @@ const Homepage = () => {
         </motion.div>}
       </AnimatePresence>
       <AnimatePresence initial={false} mode='popLayout'>
-        {active.value === "faq" && <motion.div
-          key={active.title}
+        {active === "FAQ" && <motion.div
+  
           initial={{
             opacity: 0
           }}
