@@ -1,5 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+   images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'turf-assets-prod.s3.ap-south-1.amazonaws.com',
+            },
+            {
+              protocol: 'https',
+              hostname: 'encrypted-tbn0.gstatic.com'
+            }
+            
+        ],
+    },
   eslint: {
     dirs: ['src'],
   },

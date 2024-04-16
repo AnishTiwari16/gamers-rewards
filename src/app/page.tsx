@@ -3,7 +3,7 @@ import { ConnectButton, useConnectModal } from '@rainbow-me/rainbowkit';
 import Big from 'big.js';
 import { AnimatePresence, motion } from 'framer-motion';
 import Image from 'next/image';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ImSpinner2 } from 'react-icons/im';
 import { formatUnits } from 'viem';
 import { baseSepolia, bscTestnet } from 'viem/chains';
@@ -15,15 +15,15 @@ import useGetRewardDetails from '@/hooks/useGetRewardDetails';
 import useIsUserWhiteListed from '@/hooks/useIsUserWhitelisted';
 import { cn } from '@/lib/utils';
 
-import { Tab, Tabs } from '@/components/AnimatedTabs';
-import ChainSelector from '@/components/chain/ChainSelector';
 import ClaimButton from '@/components/ClaimButton';
-import ArrowLink from '@/components/links/ArrowLink';
 import RewardBalance from '@/components/RewardBalance';
+import ChainSelector from '@/components/chain/ChainSelector';
+import ArrowLink from '@/components/links/ArrowLink';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Input } from '@/components/ui/input';
 import { FloatingNav } from '@/components/ui/floating-navbar';
+import { Input } from '@/components/ui/input';
 import { REWARD_MANAGER } from '@/constant/addresses';
+import EventSelector from '@/components/event/EventSelector';
 const getButtonCta = ({
   reward,
   isLoading,
@@ -62,7 +62,13 @@ const getButtonCta = ({
   }
   return 'Claim rewards';
 };
-
+export type eventDataType = {
+  eventName: string;
+  gameName: string;
+  ranking: number;
+  teamName: string;
+  bannerImage: string;
+}[];
 const Homepage = () => {
   const { isConnected, chain, address } = useAccount();
   const { openConnectModal } = useConnectModal();
@@ -74,7 +80,8 @@ const Homepage = () => {
     name: baseSepolia.name,
     id: baseSepolia.id,
   });
-
+  const [selectedEvent, setSelectedEvent] = useState("");
+  const [eventData, setEventData] = useState<eventDataType>([])
   const { data: claimedReward, refetch: refetchClaim } = useClaimRewards({
     chainId: selectedChain.id,
   });
@@ -83,7 +90,6 @@ const Homepage = () => {
   const [active, setActive] = useState<string>('Home');
 
   const { data: rewardDetails, isLoading, refetch } = useGetRewardDetails();
-
   const { isPending, mutateAsync: claimRewards } = useClaimMutation();
   const reward = rewardDetails
     ? formatUnits(BigInt(Big(rewardDetails[0].result as string).toString()), 18)
@@ -102,6 +108,16 @@ const Homepage = () => {
       name: "FAQ",
     },
   ];
+  const fetchData = async () => {
+    const data = await fetch(`https://30cb-2405-201-4024-504b-bc08-1594-e982-9bc1.ngrok-free.app/api/events?walletAddress=${address}`, {method: "POST"})
+    const res = await data.json()
+    setEventData(res)
+  }
+  React.useEffect(() => {
+    if(isConnected){
+      fetchData()
+    }
+  },[])
   return (
     <div className='w-full min-h-screen h-full bg-cover_bg bg-cover relative'>
       <Image
@@ -152,26 +168,18 @@ const Homepage = () => {
                     preferred chain—no gas fees, just your skills rewarded. 👾
                   </p>
                 </div>
+                <EventSelector eventData = {eventData} selectedEvent = {selectedEvent} setSelectedEvent = {setSelectedEvent}/>
                 <ChainSelector
                   chain={selectedChain}
                   setSelectedChain={setSelectedChain}
                 />
                 <RewardBalance reward={reward} />
                 <div className='w-full'>
-                  <ClaimButton
-                    disabled={
-                      isConnected && !!chain
-                        ? reward === '' ||
-                        reward === '0' ||
-                        !isUserWhitelisted ||
-                        isUserWhitelistedLoading ||
-                        isPending ||
-                        isLoading
-                        : false
-                    }
+                  {!isConnected && !selectedEvent ? (<ClaimButton
+                    
                     onClick={async () => {
                       if (!isConnected && openConnectModal) {
-                        openConnectModal();
+                        openConnectModal()
                         return;
                       }
                       if (!chain) {
@@ -193,9 +201,45 @@ const Homepage = () => {
                       isWrongChain: !chain,
                       isConnected: isConnected,
                     })}
-                  </ClaimButton>
+                  </ClaimButton>) : <ClaimButton
+                    disabled={
+                      isConnected && !!chain
+                        ? reward === '' ||
+                        reward === '0' ||
+                        !isUserWhitelisted ||
+                        isUserWhitelistedLoading ||
+                        isPending ||
+                        isLoading
+                        : false
+                    }
+                    onClick={async () => {
+                      if (!isConnected && openConnectModal) {
+                        openConnectModal()
+                        return;
+                      }
+                      if (!chain) {
+                        switchChain({
+                          chainId: bscTestnet.id,
+                        });
+                        return;
+                      }
+                      await claimRewards({ chainId: selectedChain.id });
+                      await refetch();
+                      await refetchClaim();
+                    }}
+                  >
+                    {getButtonCta({
+                      reward,
+                      isLoading:
+                        isLoading || isUserWhitelistedLoading || isPending,
+                      isUserWhitelisted: isUserWhitelisted as boolean,
+                      isWrongChain: !chain,
+                      isConnected: isConnected,
+                    })}
+                  </ClaimButton>}
+                 
                 </div>
-                {claimedReward &&
+                {selectedEvent && claimedReward &&
                   claimedReward &&
                   (reward === '0' || reward === '') &&
                   isUserWhitelisted ? (
@@ -289,7 +333,7 @@ const Homepage = () => {
                     <div className='pl-3'>
                     <ul className='list-disc'><li><span className='text-white text-lg font-semibold tracking-tight'>Wallet Integration:</span> <br />Quick and secure connection with popular wallets like MetaMask, Trust Wallet, and Coinbase Wallet.</li></ul>
                     <ul className='list-disc pt-2'><li><span className='text-white text-lg font-semibold tracking-tight'>Dynamic Rewards Dashboard:</span> <br />View detailed lists of your gaming achievements and rankings across multiple events and platforms.</li></ul>
-                    <ul className='list-dis pt-2'><li><span className='text-white text-lg font-semibold tracking-tight'>Instant Reward Claims:</span> <br />Claim your rewards in USDC instantly on your chosen blockchain network at the click of a button.</li></ul>
+                    <ul className='list-disc pt-2'><li><span className='text-white text-lg font-semibold tracking-tight'>Instant Reward Claims:</span> <br />Claim your rewards in USDC instantly on your chosen blockchain network at the click of a button.</li></ul>
                     <ul className='list-disc pt-2'><li><span className='text-white text-lg font-semibold tracking-tight'>Zero Transaction Fees:</span> <br />Enjoy the benefits of blockchain technology without any of the costs, thanks to our integration with Biconomy.</li></ul>
                     <ul className='list-disc pt-2'><li><span className='text-white text-lg font-semibold tracking-tight'>Multi-Chain Compatibility through Chainlink CCIP:</span> <br />Select from a variety of blockchain networks for receiving your rewards. Thanks to the integration with Chainlink's CCIP, we offer secure, reliable cross-chain functionality that broadens your options and enhances the flexibility of your reward claims.</li></ul>
                     </div>
