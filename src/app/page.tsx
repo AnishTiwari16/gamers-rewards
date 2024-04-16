@@ -277,22 +277,24 @@ const Homepage = () => {
                   <p className='text-sm text-muted-foreground'>
                     The Gamers Reward Portal is a platform designed to enrich the gaming experience by seamlessly connecting digital achievements with real-world rewards. By integrating blockchain tech, we enable gamers to claim their earnings in USDC directly through their preferred blockchain networks without the hassle of transaction fees. Our user-friendly interface provides a straightforward process where you can connect your wallet, view your achievements, and claim your rewards, empowering gamers to capitalize on their skills and dedication.
                    <h3 className='font-semibold tracking-tight text-xl text-white pt-5 pb-2'>Why Gamers Reward Portal ?</h3>
-                    Rewarding Gaming Excellence: We believe that your gaming skills should offer more than just in-game achievements. Our platform translates your gaming excellence into tangible rewards that you can actually use.
+                    <span className='font-bold'>Rewarding Gaming Excellence:</span> We believe that your gaming skills should offer more than just in-game achievements.
                     <br />
-                    Simplicity and Accessibility: No complicated processes here! Our straightforward interface makes it easy for anyone to start claiming their rewards immediately after connecting their wallet.
+                    <span className='font-bold'>Accessibility:</span> No complicated processes here! Our straightforward interface makes it easy for anyone to start claiming their rewards immediately after connecting their wallet.
                     <br />
-                    Gasless Transactions: With Biconomy-powered meta-transactions, you can claim rewards without worrying about blockchain network fees, making the process cost-effective and smooth.
+                    <span className='font-bold'>Gasless Txn:</span> With Biconomy-powered meta-transactions, you can claim rewards without worrying about blockchain network fees, making the process cost-effective and smooth.
                     <br />
-                    Multi-Chain Compatibility: Choose from multiple supported blockchains to receive your rewards, giving you the flexibility to use your rewards in various crypto ecosystems.
+                   <span className='font-bold'>Cross-Chain Compatibility:</span> Choose from multiple supported blockchains to receive your rewards, giving you the flexibility to use your rewards in various crypto ecosystems.
                     <br />
                     <br />
                      <h3 className='font-semibold tracking-tight text-xl text-white'>Features at a Glance:</h3>
                     <br />
+                    <div className='pl-3'>
                     <ul className='list-disc'><li><span className='text-white text-lg font-semibold tracking-tight'>Wallet Integration:</span> <br />Quick and secure connection with popular wallets like MetaMask, Trust Wallet, and Coinbase Wallet.</li></ul>
                     <ul className='list-disc pt-2'><li><span className='text-white text-lg font-semibold tracking-tight'>Dynamic Rewards Dashboard:</span> <br />View detailed lists of your gaming achievements and rankings across multiple events and platforms.</li></ul>
                     <ul className='list-dis pt-2'><li><span className='text-white text-lg font-semibold tracking-tight'>Instant Reward Claims:</span> <br />Claim your rewards in USDC instantly on your chosen blockchain network at the click of a button.</li></ul>
                     <ul className='list-disc pt-2'><li><span className='text-white text-lg font-semibold tracking-tight'>Zero Transaction Fees:</span> <br />Enjoy the benefits of blockchain technology without any of the costs, thanks to our integration with Biconomy.</li></ul>
                     <ul className='list-disc pt-2'><li><span className='text-white text-lg font-semibold tracking-tight'>Multi-Chain Compatibility through Chainlink CCIP:</span> <br />Select from a variety of blockchain networks for receiving your rewards. Thanks to the integration with Chainlink's CCIP, we offer secure, reliable cross-chain functionality that broadens your options and enhances the flexibility of your reward claims.</li></ul>
+                    </div>
                   </p>
                 </div>
               </div>
