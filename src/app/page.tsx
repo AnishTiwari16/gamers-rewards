@@ -18,12 +18,21 @@ import { cn } from '@/lib/utils';
 import ClaimButton from '@/components/ClaimButton';
 import RewardBalance from '@/components/RewardBalance';
 import ChainSelector from '@/components/chain/ChainSelector';
+import EventSelector from '@/components/event/EventSelector';
 import ArrowLink from '@/components/links/ArrowLink';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { FloatingNav } from '@/components/ui/floating-navbar';
 import { Input } from '@/components/ui/input';
 import { REWARD_MANAGER } from '@/constant/addresses';
-import EventSelector from '@/components/event/EventSelector';
+
+  import {
+  createSmartAccountClient,BiconomySmartAccountV2
+} from "@biconomy/account";
+import { ethers } from 'ethers';
+import { EthereumPrivateKeyProvider } from "@web3auth/ethereum-provider";
+import { CHAIN_NAMESPACES , IProvider} from "@web3auth/base";
+import { Web3Auth } from "@web3auth/modal";
+import { truncateAddress } from '@/lib/truncateAddress';
 const getButtonCta = ({
   reward,
   isLoading,
@@ -73,6 +82,11 @@ const Homepage = () => {
   const { isConnected, chain, address } = useAccount();
   const { openConnectModal } = useConnectModal();
   const { switchChain } = useSwitchChain();
+    const [provider, setProvider] = useState<IProvider | null>(null);
+     const [smartAccount, setSmartAccount] =
+    useState<BiconomySmartAccountV2 | null>(null);
+  const [smartAddress, setSmartAddress] = useState<string>("");
+  const [loggedIn, setLoggedIn] = useState(false);
   const [selectedChain, setSelectedChain] = useState<{
     id: number;
     name: string;
@@ -83,14 +97,14 @@ const Homepage = () => {
   const [selectedEvent, setSelectedEvent] = useState("");
   const [eventData, setEventData] = useState<eventDataType>([])
   const { data: claimedReward, refetch: refetchClaim } = useClaimRewards({
-    chainId: selectedChain.id,
+    chainId: selectedChain.id
   });
 
 
   const [active, setActive] = useState<string>('Home');
 
-  const { data: rewardDetails, isLoading, refetch } = useGetRewardDetails();
-  const { isPending, mutateAsync: claimRewards } = useClaimMutation();
+  const { data: rewardDetails, isLoading, refetch } = useGetRewardDetails({smartAddress : smartAddress});
+  const { isPending, mutateAsync: claimRewards } = useClaimMutation({smartAccount:smartAccount, smartAddress: smartAddress});
   const reward = rewardDetails
     ? formatUnits(BigInt(Big(rewardDetails[0].result as string).toString()), 18)
     : '';
@@ -108,6 +122,70 @@ const Homepage = () => {
       name: "FAQ",
     },
   ];
+  const chainConfig = {
+      chainNamespace: CHAIN_NAMESPACES.EIP155,
+      chainId: "0x61",
+      rpcTarget: "https://data-seed-prebsc-1-s1.binance.org:8545",
+      displayName: "BSC Testnet",
+      blockExplorer: "https://testnet.bscscan.com/",
+      ticker: "Binance Coin",
+      tickerName: "BSC Testnet",
+    };
+    const web3auth = new Web3Auth({
+      clientId:
+        "BNTKyCbmfznZNwOHbUiaCPR8Vn5-Qi2vFU-AHheAdEJXJGTU6cMXE01inAgTpfEQlUKvkYCWQ-AOBzkc0WGOBTE", // Get your Client ID from the Web3Auth Dashboard https://dashboard.web3auth.io/
+      web3AuthNetwork: "sapphire_devnet", // Web3Auth Network
+      chainConfig,
+      uiConfig: {
+        appName: "Biconomy X Web3Auth",
+        mode: "dark", // light, dark or auto
+        loginMethodsOrder: ["apple", "google", "twitter"],
+        logoLight: "https://web3auth.io/images/web3auth-logo.svg",
+        logoDark: "https://web3auth.io/images/web3auth-logo---Dark.svg",
+        defaultLanguage: "en", // en, de, ja, ko, zh, es, fr, pt, nl
+        loginGridCol: 3,
+        primaryButton: "socialLogin", // "externalLogin" | "socialLogin" | "emailLogin"
+      },
+      privateKeyProvider: new EthereumPrivateKeyProvider({
+      config: { chainConfig: chainConfig }
+})
+    });
+const connectWallet = async () => {
+  try {
+    //Creating web3auth instance
+    await web3auth.initModal();
+    const web3authProvider = await web3auth.connect();
+    const ethersProvider = new ethers.providers.Web3Provider(
+      web3authProvider as any
+    );
+    const web3AuthSigner = ethersProvider.getSigner();
+
+    const config = {
+      biconomyPaymasterApiKey: "CVR6PwxcA.6e2333d3-7cbd-4b9d-acdb-0d490b86bbdf", // <-- Get your paymaster API key from https://dashboard.biconomy.io/paymaster
+      bundlerUrl:`"https://bundler.biconomy.io/api/v2/${chainConfig.chainId}/nJPK7B3ru.dd7f7861-190d-41bd-af80-6877f74b8f44`, // <-- Read about this at https://docs.biconomy.io/dashboard#bundler-url
+      
+    };
+
+    const smartWallet = await createSmartAccountClient({
+      signer: web3AuthSigner,
+      biconomyPaymasterApiKey: config.biconomyPaymasterApiKey,
+      bundlerUrl: config.bundlerUrl,
+      chainId: parseInt(chainConfig.chainId),
+      rpcUrl: "https://data-seed-prebsc-1-s1.binance.org:8545" // <-- read about this at https://docs.biconomy.io/Account/methods#createsmartaccountclient
+    });
+    const address = await smartWallet.getAccountAddress();
+    console.log(address)
+    setSmartAddress(address)
+    setSmartAccount(smartWallet);
+  } catch (error) {
+    console.error(error);
+  }
+};
+const logout = async () => {
+    await web3auth.logout();
+    setProvider(null);
+    setLoggedIn(false);
+  };
   const fetchData = async () => {
     const data = await fetch(`https://30cb-2405-201-4024-504b-bc08-1594-e982-9bc1.ngrok-free.app/api/events?walletAddress=${address}`, {method: "POST"})
     const res = await data.json()
@@ -118,6 +196,23 @@ const Homepage = () => {
       fetchData()
     }
   },[])
+  React.useEffect(() => {
+    const init = async () => {
+      try {
+        await web3auth.initModal();
+        setProvider(web3auth.provider);
+
+        if (web3auth.connected) {
+          setLoggedIn(true);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    init();
+  }, []);
+  console.log(smartAddress, loggedIn)
   return (
     <div className='w-full min-h-screen h-full bg-cover_bg bg-cover relative'>
       <Image
@@ -135,9 +230,19 @@ const Homepage = () => {
             }}
           />
         </div> */}
-        <FloatingNav navItems={navItems} active = {active} setActive = {setActive}/>
-        <ConnectButton />
       
+        <FloatingNav navItems={navItems} active = {active} setActive = {setActive}/>
+        {/* <ConnectButton /> */}
+        <div className='absolute'>
+         {!loggedIn ? <button
+            className="w-[10rem] h-[3rem] bg-white text-black font-bold rounded-lg "
+            onClick={connectWallet}
+          >
+              Connect wallet
+          </button> : truncateAddress(smartAddress)}
+        {/* {loggedIn && <button   className="w-[10rem] h-[3rem] bg-white text-black font-bold rounded-lg "
+            onClick={logout}>Disconnect wallet</button>} */}
+     </div>
       </div>
       <AnimatePresence initial={false} mode='popLayout'>
         {active === "Home" && <motion.div
@@ -156,6 +261,7 @@ const Homepage = () => {
           className='w-full relative overflow-hidden '
         >
           <div className='h-full '>
+           
             <div className='max-w-[500px] z-20 h-full relative mt-5 mx-auto w-full'>
               <div className='rounded-xl border bg-card text-card-foreground h-full pb-2 px-2 shadow-sm'>
                 <div className='flex flex-col p-6 space-y-1'>

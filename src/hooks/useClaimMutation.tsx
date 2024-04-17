@@ -3,84 +3,99 @@
 'use client';
 import { Biconomy } from '@biconomy/mexa';
 import { useMutation } from '@tanstack/react-query';
-import { Contract } from 'ethers';
+import { ethers, Contract } from 'ethers';
 import { useCallback } from 'react';
 import { bscTestnet } from 'viem/chains';
 import { useAccount } from 'wagmi';
-
 import { useToast } from '@/components/ui/use-toast';
-
+  import {BiconomySmartAccountV2, PaymasterMode
+} from "@biconomy/account";
 import { REWARD_MANAGER_ABI } from '@/constant/abi';
 import {
-  DESTINATION_CONTRACT_ADDRESS,
+
   REWARD_MANAGER,
 } from '@/constant/addresses';
-import { DESTINATION_CHAIN_SELECTOR } from '@/constant/constants';
+// import { DESTINATION_CHAIN_SELECTOR } from '@/constant/constants';
+const DESTINATION_CHAIN_SELECTOR = ethers.BigNumber.from(
+  "10344971235874465080"
+);
 
-const useClaimMutation = () => {
-  const { address } = useAccount();
+const DESTINATION_CONTRACT_ADDRESS =
+  "0x338607A7d733D1B37c902028225d529dd5DC000C";
+
+const ABI = [
+  "function addReward(address user, uint256 amount)",
+  "function claimRewards(uint64 destinationChainSelector, address destinationContractAddress)",
+  "function getRewardBalance() view returns (uint256)",
+  "function isWhitelisted() view returns (bool)",
+  "function claimRewardSource()",
+  "function whitelistUser(address user)",
+  "function removeUserFromWhitelist(address user)",
+];
+const useClaimMutation = ({    smartAccount, smartAddress} : {    smartAccount : BiconomySmartAccountV2 | null, smartAddress: string}) => {
+  // const { address } = useAccount();
   const { toast } = useToast();
   // const { data: biconomySmartContract } = useBiconomy()
-
   const claimRewards = useCallback(
     async ({ chainId }: { chainId: number }) => {
       try {
-        if (!address) return;
+        if (!smartAddress) return;
         if (window.ethereum) {
           toast({
             title: 'Awaiting Transaction',
           });
-          const biconomy = new Biconomy(window.ethereum, {
-            apiKey: 'JQpVD1_Ov.d6fad103-3732-44cc-a2f1-e3a0b40995fe',
-            debug: true,
-            contractAddresses: [REWARD_MANAGER],
-          });
-          const provider = biconomy.provider;
-          const contractInstance = new Contract(
-            REWARD_MANAGER,
-            REWARD_MANAGER_ABI,
-            biconomy.ethersProvider
+          const provider = new ethers.providers.JsonRpcProvider(
+            'https://data-seed-prebsc-1-s1.binance.org:8545'
           );
-          await biconomy.init();
-          const txParams = {
-            to: REWARD_MANAGER,
-            from: address,
-            signatureType: 'EIP712_SIGN',
-          };
+          const contractInstance = new ethers.Contract(
+        REWARD_MANAGER,
+        ABI,
+        provider
+      );
           if (chainId === bscTestnet.id) {
             const { data } =
               await contractInstance.claimRewardSource.populateTransaction();
-            txParams.data = data;
+     
           } else {
             const { data } =
-              await contractInstance.claimRewards.populateTransaction(
-                DESTINATION_CHAIN_SELECTOR,
-                DESTINATION_CONTRACT_ADDRESS
+              await contractInstance.populateTransaction.claimRewards(
+                  DESTINATION_CHAIN_SELECTOR,
+        DESTINATION_CONTRACT_ADDRESS
               );
-            txParams.data = data;
+              const tx1 = {
+                to: REWARD_MANAGER,
+                data: data,
+              };
+              console.log(data);
+              //@ts-ignore
+              const userOpResponse = await smartAccount?.sendTransaction(tx1);
+              console.log(userOpResponse)
+              const { transactionHash } = await userOpResponse.waitForTxHash();
+              console.log("Transaction Hash", transactionHash);
+
           }
-          await provider.send('eth_sendTransaction', [txParams]);
-          biconomy.on('txHashGenerated', (data) => {
-            console.log('txHashGenerated', data);
-          });
-          biconomy.on('txMined', (data) => {
-            console.log('txMined', data);
-          });
+          // await provider.send('eth_sendTransaction', [txParams]);
+          // biconomy.on('txHashGenerated', (data) => {
+          //   console.log('txHashGenerated', data);
+          // });
+          // biconomy.on('txMined', (data) => {
+          //   console.log('txMined', data);
+          // });
 
-          biconomy.on('onError', (err) => {
-            console.error('onError', err);
-          });
+          // biconomy.on('onError', (err) => {
+          //   console.error('onError', err);
+          // });
 
-          biconomy.on('txHashChanged', (data) => {
-            console.log('txHashChanged', data);
-          });
+          // biconomy.on('txHashChanged', (data) => {
+          //   console.log('txHashChanged', data);
+          // });
         }
       } catch (error) {
         console.log(error);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [address]
+    [smartAddress]
   );
 
   return useMutation({

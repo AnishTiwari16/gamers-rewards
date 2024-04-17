@@ -4,8 +4,9 @@ import { REWARD_MANAGER_ABI } from '@/constant/abi';
 import { REWARD_MANAGER } from '@/constant/addresses';
 
 // const useGetRewardDetails = ({ chainId }: { chainId: number }) => {
-const useGetRewardDetails = () => {
-  const { address } = useAccount();
+const useGetRewardDetails = ({smartAddress} : {smartAddress : string}) => {
+  const address = smartAddress
+  console.log(address)
   // let contractAddress = '';
 
   // if (chainId === base.id) {

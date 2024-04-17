@@ -3,8 +3,9 @@
 import { Input } from "./ui/input";
 
 const RewardBalance = ({ reward }: { reward: string }) => {
+  console.log(reward)
   return (
- reward > '0'&& ( <div className='p-6 pt-0 grid gap-4'>
+  ( <div className='p-6 pt-0 grid gap-4'>
       <div className='grid gap-2 mt-2'>
         <label
           className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'

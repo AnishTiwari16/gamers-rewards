@@ -1,6 +1,6 @@
 import { eventDataType } from '@/app/page';
 import Image from 'next/image'
-import React, { Dispatch, SetStateAction, useState } from 'react'
+import React, { Dispatch, SetStateAction } from 'react'
 
 const EventSelector = ({eventData, selectedEvent, setSelectedEvent} : {eventData : eventDataType;selectedEvent: string; setSelectedEvent: Dispatch<SetStateAction<string>>}) => {
    
@@ -27,7 +27,7 @@ const userSelectedEvent = eventData.find((event) => event.eventName === selected
         </select>
     </form>
     {userSelectedEvent &&  (<div className='border p-1 rounded-md'>
-      <Image src={userSelectedEvent.bannerImage} alt='banner' height={500} width={500}/>
+      <Image src={userSelectedEvent.bannerImage} alt='banner' height={500} width={500} className='object-cover'/>
     <div className='text-sm p-3'>
       <div className='flex items-center space-x-2 pb-1'>
         <div>#{userSelectedEvent.ranking}</div>
